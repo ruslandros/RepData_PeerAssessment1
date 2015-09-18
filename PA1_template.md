@@ -14,7 +14,7 @@ ActivityData <- read.table("./repdata-data-activity/activity.csv", sep=",", head
 
 cleanData <- na.omit(ActivityData)
 
-# get the mean of steps for cleanData
+# get the mean of steps for all day and interval from the cleanData dataset
 # to be used as replacement for NAs in later stage
 
 mean(cleanData$steps)
@@ -89,7 +89,17 @@ plot(x1, y1, type="l", xlab = "Interval", ylab="Average steps per day")
 
 ### In which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 
-Interval = **835**
+
+```r
+df <- avg_Interval_Data
+
+max_interval <- df[which(df$avgSteps == max(df$avgSteps)), ]
+max_interval$interval
+```
+
+```
+## [1] 835
+```
 
 
 ## 4. Imputing missing values
@@ -113,6 +123,8 @@ sum(is.na(modified_ActivityData))
 
 ```r
 ## repace NAs with the steps average from the clean data set
+## the strategy is to replace the NAs with the mean of the steps from all days
+## and interval from the complete case data set
 
 modified_ActivityData[is.na(modified_ActivityData[,1]),1] <- mean(cleanData$steps)
 
@@ -136,7 +148,7 @@ sum_Steps_Modified_Daily_Data <- ddply(modified_ActivityData, c("date"), summari
 hist(sum_Steps_Modified_Daily_Data$sumSteps, col="red", xlab="Steps", main="Total steps per day")
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-7-1.png) 
+![](PA1_template_files/figure-html/unnamed-chunk-8-1.png) 
 
 The mean of the number of steps taken daily is
 
@@ -213,4 +225,4 @@ qplot(interval, avg, data=summary_data, facets=.~day, geom=c("line"),
       main="Interval vs Average steps")
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-10-1.png) 
+![](PA1_template_files/figure-html/unnamed-chunk-11-1.png) 
