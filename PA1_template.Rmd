@@ -6,7 +6,9 @@ output:
 ---
 
 
-## Loading and preprocessing the data
+
+## 1. Loading and preprocessing the data
+
 
 
 ```{r}
@@ -24,10 +26,10 @@ mean(cleanData$steps)
 ```
 
 
-## What is mean total number of steps taken per day?
+## 2. What is mean total number of steps taken per day?
 
 
-```{r, echo=FALSE}
+```{r, echo=TRUE}
 library(plyr)
 
 # calculate the number of steps for each day
@@ -35,18 +37,28 @@ library(plyr)
 sum_Steps_Daily_Data <- ddply(cleanData, c("date"), summarise,
                       sumSteps    = sum(steps))
 
-hist(sum_Steps_Daily_Data$sumSteps, col="red", xlab="Date", main="")
+# plot the histogram
 
-mean(sum_Steps_Daily_Data$sumStep)
-#median(sum_Steps_Daily_Data$sumStep)
-#summary(sum_Steps_Daily_Data)
-
+hist(sum_Steps_Daily_Data$sumSteps, col="red", xlab="Steps", main="Total steps per day")
 ```
 
+The mean of the number of steps taken daily is
 
-## What is the average daily activity pattern?
+```{r, echo=TRUE}
+mean(sum_Steps_Daily_Data$sumStep)
+```
 
-```{r, echo=FALSE}
+The median of the number of steps taken daily is
+
+```{r, echo=TRUE}
+median(sum_Steps_Daily_Data$sumStep)
+```
+
+## 3. What is the average daily activity pattern?
+
+
+```{r, echo=TRUE}
+
 ## Average daily pattern
 
 avg_Interval_Data <- ddply(cleanData, c("interval"), summarise,
@@ -55,37 +67,81 @@ avg_Interval_Data <- ddply(cleanData, c("interval"), summarise,
 x1 <- avg_Interval_Data$interval
 y1 <- avg_Interval_Data$avgSteps
 
-plot(x1, y1, type="l", xlab = "interval", ylab="average steps per day")
+# plot the time series
+
+plot(x1, y1, type="l", xlab = "Interval", ylab="Average steps per day")
 
 ```
 
-## Imputing missing values
 
-```{r, echo=FALSE}
+### In which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
+
+Interval = **835**
+
+
+## 4. Imputing missing values
+
+### Total number of missing values NAs in original dataset
+
+```{r, echo=TRUE}
 
 modified_ActivityData <- ActivityData
 
+# count of NAs is
+
 sum(is.na(modified_ActivityData))
+```
+
+
+```{r, echo=TRUE}
+
+## repace NAs with the steps average from the clean data set
 
 modified_ActivityData[is.na(modified_ActivityData[,1]),1] <- mean(cleanData$steps)
 
+# count of NAs after replacement
+
 sum(is.na(modified_ActivityData))
+
+# total steps per day
 
 sum_Steps_Modified_Daily_Data <- ddply(modified_ActivityData, c("date"), summarise,
                       sumSteps    = sum(steps))
 
-hist(sum_Steps_Modified_Daily_Data$sumSteps, col="red", xlab="Date", main="")
+#plot the histogram
 
-mean(sum_Steps_Modified_Daily_Data$sumStep)
-median(sum_Steps_Modified_Daily_Data$sumStep)
-summary(sum_Steps_Modified_Daily_Data)
-
+hist(sum_Steps_Modified_Daily_Data$sumSteps, col="red", xlab="Steps", main="Total steps per day")
 ```
 
-## Are there differences in activity patterns between weekdays and weekends?
+The mean of the number of steps taken daily is
 
-## weekdays and weekends activity pattern
-```{r, echo=FALSE}
+```{r, echo=TRUE}
+mean(sum_Steps_Modified_Daily_Data$sumStep)
+```
+
+The median of the number of steps taken daily is
+
+```{r, echo=TRUE}
+median(sum_Steps_Modified_Daily_Data$sumStep)
+```
+
+### Do these values differ from the estimates from the first part of the assignment?
+
+** No changes on the mean value **
+
+** Minor increase (1.19 steps) on the median value **
+
+### What is the impact of imputing missing data on the estimates of the total daily number of steps?
+
+** Minimal impact on the estimates **
+
+## 5. Are there differences in activity patterns between weekdays and weekends?
+
+```{r, echo=TRUE}
+
+# the code to create the new factor variable 
+# below is following an example from stackoverflow
+
 wkdays <- c('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday')
 
 modified_ActivityData$date <- as.Date(modified_ActivityData$date)
@@ -94,15 +150,20 @@ modified_ActivityData$date <- as.Date(modified_ActivityData$date)
 modified_ActivityData$day <- factor((weekdays(modified_ActivityData$date) %in% wkdays), 
                    levels=c(FALSE, TRUE), labels=c('weekend', 'weekday')) 
 
+# to show that the new factor variable 'day' is created
+
 str(modified_ActivityData)
+
+# aggregate average steps based on weekend and weekdays
 
 summary_data <- ddply(modified_ActivityData, c("interval", "day"), summarise,
                       avg    = mean(steps))
 
 library(ggplot2)
-#geom=c("line", "smooth")
+
+# plot the time series
 
 qplot(interval, avg, data=summary_data, facets=.~day, geom=c("line"),
       method="lm", xlab="Interval", ylab="Avg steps", 
-      main="interval vs avg steps")
+      main="Interval vs Average steps")
 ```                   
